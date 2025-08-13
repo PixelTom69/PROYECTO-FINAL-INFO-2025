@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block contenido_cuerpo %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acerca de - {{ proyecto_info.nombre }}</title>
+    <link rel="stylesheet" href="{% load static %}{% static 'css/styles.css' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Hero Section -->
+    <section style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 100px 0 60px; text-align: center; color: white;">
+        <div class="container">
+            <h1 style="font-size: 3rem; margin-bottom: 20px; font-weight: 700;">Acerca de Nosotros</h1>
+            <p style="font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin: 0 auto;">Conoce al equipo detrás de {{ proyecto_info.nombre }}</p>
+        </div>
+    </section>
+
+    <!-- Información del Proyecto -->
+    <section style="padding: 80px 0; background: #f8f9fa;">
+        <div class="container">
+            <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+                <h2 style="font-size: 2.5rem; margin-bottom: 40px; color: #2c3e50;">{{ proyecto_info.nombre }}</h2>
+                <p style="font-size: 1.1rem; line-height: 1.8; color: #666; margin-bottom: 40px;">{{ proyecto_info.descripcion }}</p>
+                
+                <!-- Tecnologías -->
+                <div style="margin-bottom: 40px;">
+                    <h3 style="font-size: 1.5rem; margin-bottom: 20px; color: #2c3e50;">Tecnologías Utilizadas</h3>
+                    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;">
+                        {% for tech in proyecto_info.tecnologias %}
+                        <span style="background: #667eea; color: white; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: 500;">{{ tech }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Equipo -->
+    <section style="padding: 80px 0;">
+        <div class="container">
+            <div style="text-align: center; margin-bottom: 60px;">
+                <h2 style="font-size: 2.5rem; margin-bottom: 20px; color: #2c3e50;">Nuestro Equipo</h2>
+                <p style="font-size: 1.1rem; color: #666; max-width: 600px; margin: 0 auto;">Estudiantes apasionados por el desarrollo web y el turismo argentino</p>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto;">
+                <!-- Victor Acuña -->
+                <div style="background: white; border-radius: 20px; padding: 40px 30px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: transform 0.3s ease;">
+                    <div style="margin-bottom: 25px;">
+                        <div style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); margin: 0 auto; display: flex; align-items: center; justify-content: center; color: white; font-size: 2.5rem; font-weight: bold; border: 5px solid #667eea;">
+                            VA
+                        </div>
+                    </div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 10px; color: #2c3e50;">Victor Acuña</h3>
+                    <p style="color: #667eea; font-weight: 600; margin-bottom: 15px; font-size: 1rem;">Desarrollador</p>
+                </div>
+
+                <!-- Mauro Alvarez Gabriel -->
+                <div style="background: white; border-radius: 20px; padding: 40px 30px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: transform 0.3s ease;">
+                    <div style="margin-bottom: 25px;">
+                        <div style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); margin: 0 auto; display: flex; align-items: center; justify-content: center; color: white; font-size: 2.5rem; font-weight: bold; border: 5px solid #667eea;">
+                            MA
+                        </div>
+                    </div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 10px; color: #2c3e50;">Mauro Alvarez Gabriel</h3>
+                    <p style="color: #667eea; font-weight: 600; margin-bottom: 15px; font-size: 1rem;">Desarrollador</p>
+                </div>
+
+                <!-- Tomás Nahuel Villordo -->
+                <div style="background: white; border-radius: 20px; padding: 40px 30px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: transform 0.3s ease;">
+                    <div style="margin-bottom: 25px;">
+                        <div style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); margin: 0 auto; display: flex; align-items: center; justify-content: center; color: white; font-size: 2.5rem; font-weight: bold; border: 5px solid #667eea;">
+                            TN
+                        </div>
+                    </div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 10px; color: #2c3e50;">Tomás Nahuel Villordo</h3>
+                    <p style="color: #667eea; font-weight: 600; margin-bottom: 15px; font-size: 1rem;">Desarrollador</p>
+                </div>
+
+                <!-- Laureano Vallejos -->
+                <div style="background: white; border-radius: 20px; padding: 40px 30px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: transform 0.3s ease;">
+                    <div style="margin-bottom: 25px;">
+                        <div style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); margin: 0 auto; display: flex; align-items: center; justify-content: center; color: white; font-size: 2.5rem; font-weight: bold; border: 5px solid #667eea;">
+                            LV
+                        </div>
+                    </div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 10px; color: #2c3e50;">Laureano Vallejos</h3>
+                    <p style="color: #667eea; font-weight: 600; margin-bottom: 15px; font-size: 1rem;">Desarrollador</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 80px 0; text-align: center;">
+        <div class="container">
+            <h2 style="font-size: 2.2rem; color: white; margin-bottom: 20px;">¿Tienes alguna consulta?</h2>
+            <p style="color: white; opacity: 0.9; margin-bottom: 30px; font-size: 1.1rem;">Estamos aquí para ayudarte con cualquier pregunta sobre turismo en el Chaco</p>
+            <a href="{% url 'contacto:contacto' %}" style="display: inline-block; background: white; color: #667eea; padding: 15px 30px; border-radius: 50px; text-decoration: none; font-weight: 600; transition: transform 0.2s;">
+                <i class="fas fa-paper-plane" style="margin-right: 10px;"></i>
+                Contáctanos
+            </a>
+        </div>
+    </section>
+
+    <style>
+    /* Efectos hover */
+    div[style*="box-shadow"]:hover {
+        transform: translateY(-10px);
+    }
+    
+    a[style*="transition"]:hover {
+        transform: scale(1.1);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        h1[style*="font-size: 3rem"] {
+            font-size: 2rem !important;
+        }
+        
+        h2[style*="font-size: 2.5rem"] {
+            font-size: 1.8rem !important;
+        }
+        
+        div[style*="grid-template-columns"] {
+            grid-template-columns: 1fr !important;
+        }
+    }
+    </style>
+</body>
+</html>
+{% endblock contenido_cuerpo %}

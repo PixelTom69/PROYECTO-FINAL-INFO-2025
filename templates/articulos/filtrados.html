@@ -1,0 +1,809 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block contenido_cuerpo %}
+<!-- News Section -->
+<section class="news-section" id="noticias">
+    <div class="container">
+        <h2 class="section-title">Filtrado Por: {{ categoria.nombre|default:"Categoría" }}</h2>
+        
+        <!-- Botón para volver a todas las categorías -->
+        <div class="filter-navigation" style="text-align: center; margin: 2rem 0;">
+            <a href="{% url 'genericos:path_listar_categorias' %}" class="btn-back-filter">
+                <i class="fas fa-arrow-left"></i>
+                Ver todas las categorías
+            </a>
+        </div>
+
+        {% if articulos %}
+            <div class="news-grid">
+                {% for articulo in articulos %}
+                    <div class="news-card-container">
+                        <!-- Envolver toda la tarjeta en un enlace -->
+                        <a href="{% url 'articulos:path_detalle_articulo' articulo.pk %}" class="news-card-link">
+                            <article class="news-card {% if forloop.first %}featured{% endif %}">
+                                <div class="news-image">
+                                    {% if articulo.imagen_destacada %}
+                                        <img src="{{ articulo.imagen_destacada.url }}" alt="{{ articulo.titulo }}">
+                                    {% else %}
+                                        <img src="{% static 'img/default-news.jpg' %}" alt="{{ articulo.titulo }}">
+                                    {% endif %}
+                                    <!-- Overlay para indicar que es clickeable -->
+                                    <div class="hover-overlay">
+                                        <i class="fas fa-eye"></i>
+                                        <span>Ver artículo</span>
+                                    </div>
+                                </div>
+                                <div class="news-content">
+                                    <span class="news-category">{{ articulo.categoria.nombre|upper|default:"TURISMO" }}</span>
+                                    <h3>{{ articulo.titulo }}</h3>
+                                    <p>{{ articulo.resumen|truncatewords:25 }}</p>
+                                    <div class="news-meta">
+                                        <span><i class="far fa-calendar"></i> {{ articulo.creado|date:"d M Y" }}</span>
+                                        <span><i class="far fa-clock"></i> {{ articulo.modificado|timesince }} ago</span>
+                                    </div>
+                                    
+                                    <!-- Tags si existen -->
+                                    {% if articulo.tags %}
+                                        <div class="article-tags">
+                                            {% for tag in articulo.tags.all %}
+                                                <span class="tag">#{{ tag.name }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Indicador de leer más -->
+                                    <div class="read-more-indicator">
+                                        <span>Leer más <i class="fas fa-arrow-right"></i></span>
+                                    </div>
+                                </div>
+                            </article>
+                        </a>
+                        
+                        <!-- Botones de acción SOLO PARA STAFF -->
+                        {% if user.is_staff %}
+                        <div class="article-actions">
+                            <a href="{% url 'articulos:path_modificar_articulo' articulo.pk %}" class="btn-modificar">
+                                <i class="fas fa-edit"></i>
+                                Modificar
+                            </a>
+                            <a href="{% url 'articulos:path_borrar_articulo' articulo.pk %}" class="btn-eliminar">
+                                <i class="fas fa-trash-alt"></i>
+                                Eliminar
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Paginación si es necesaria -->
+            {% if is_paginated %}
+                <div class="news-pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}" class="btn-pagination">« Anterior</a>
+                    {% endif %}
+                    
+                    <span class="page-info">
+                        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                    </span>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="btn-pagination">Siguiente »</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+            
+        {% else %}
+            <!-- Estado vacío -->
+            <div class="no-articles">
+                <div class="empty-state">
+                    <i class="fas fa-filter" style="font-size: 4rem; color: #ccc; margin-bottom: 1rem;"></i>
+                    <h3>No hay artículos en esta categoría</h3>
+                    <p>Aún no se han publicado artículos en "{{ categoria.nombre|default:"esta categoría" }}". ¡Vuelve pronto para descubrir nuevas noticias!</p>
+                    
+                    <!-- ÚNICO botón para crear artículo - SOLO PARA STAFF y SOLO cuando no hay artículos -->
+                    {% if user.is_staff %}
+                    <div class="first-article-cta">
+                        <a href="{% url 'articulos:path_crear_articulo' %}?categoria={{ categoria.pk }}" class="btn-crear-primer-articulo">
+                            <i class="fas fa-plus-circle"></i>
+                            Crear artículo para {{ categoria.nombre|default:"esta categoría" }}
+                        </a>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Botón para ver todas las categorías -->
+                    <div style="margin-top: 1.5rem;">
+                        <a href="{% url 'articulos:path_listar_articulos' %}" class="btn-view-all">
+                            <i class="fas fa-th-large"></i>
+                            Ver todos los artículos
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<style>
+/* Botón para volver al filtro */
+.btn-back-filter {
+    background: linear-gradient(135deg, #6c757d, #5a6268);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+    font-size: 0.9rem;
+}
+
+.btn-back-filter:hover {
+    background: linear-gradient(135deg, #5a6268, #495057);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(108, 117, 125, 0.4);
+    text-decoration: none;
+    color: white;
+}
+
+.btn-back-filter i {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.3rem;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.btn-back-filter:hover i {
+    transform: translateX(-3px);
+}
+
+/* Botón para ver todos los artículos */
+.btn-view-all {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(23, 162, 184, 0.3);
+    font-size: 1rem;
+}
+
+.btn-view-all:hover {
+    background: linear-gradient(135deg, #138496, #117a8b);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(23, 162, 184, 0.4);
+    text-decoration: none;
+    color: white;
+}
+
+.btn-view-all i {
+    font-size: 1.1rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.btn-view-all:hover i {
+    transform: scale(1.1);
+}
+
+/* Contenedor del botón crear */
+.create-button-container {
+    text-align: center;
+    margin: 2rem 0;
+}
+
+/* Botón crear noticia */
+.btn-crear-noticia {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
+    font-size: 1.1rem;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-crear-noticia:hover {
+    background: linear-gradient(135deg, #218838, #1ba085);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(40, 167, 69, 0.4);
+    text-decoration: none;
+    color: white;
+}
+
+.btn-crear-noticia i {
+    font-size: 1.2rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.btn-crear-noticia:hover i {
+    transform: rotate(90deg);
+}
+
+/* Botón para crear el primer artículo */
+.first-article-cta {
+    margin-top: 2rem;
+}
+
+.btn-crear-primer-articulo {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(243, 156, 18, 0.3);
+    font-size: 1.1rem;
+}
+
+.btn-crear-primer-articulo:hover {
+    background: linear-gradient(135deg, #e67e22, #d35400);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(243, 156, 18, 0.4);
+    text-decoration: none;
+    color: white;
+}
+
+.btn-crear-primer-articulo i {
+    font-size: 1.2rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.btn-crear-primer-articulo:hover i {
+    transform: scale(1.1);
+}
+
+/* Contenedor de cada tarjeta con botón */
+.news-card-container {
+    position: relative;
+    height: 100%;
+    width: 370px; /* ANCHO FIJO PARA EL CONTENEDOR */
+    margin: 0 auto; /* CENTRAR LA TARJETA */
+}
+
+/* Estilos para hacer las tarjetas clickeables */
+.news-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.news-card-link:hover {
+    text-decoration: none;
+    color: inherit;
+    transform: translateY(-10px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+.news-card-link:focus {
+    outline: 3px solid #f39c12;
+    outline-offset: 2px;
+}
+
+/* Estilos para las tarjetas - ESTRUCTURA FLEX PARA UNIFORMIDAD */
+.news-card {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    height: 100%;
+    width: 100%; /* OCUPAR TODO EL ANCHO DEL CONTENEDOR FIJO */
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+/* Acciones del artículo - ABSOLUTO PARA NO AFECTAR LAYOUT */
+.article-actions {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    background: rgba(248, 249, 250, 0.95);
+    border-radius: 0 0 15px 15px;
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    transform: translateY(100%);
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+/* Mostrar acciones solo al hover del contenedor */
+.news-card-container:hover .article-actions {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.btn-modificar {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    padding: 0.6rem 1.5rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    font-size: 0.9rem;
+}
+
+.btn-modificar:hover {
+    background: linear-gradient(135deg, #2980b9, #1f639a);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+    text-decoration: none;
+    color: white;
+}
+
+.btn-modificar i {
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.3rem;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.btn-modificar:hover i {
+    transform: rotate(15deg);
+}
+
+.btn-eliminar {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    padding: 0.6rem 1.5rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+    font-size: 0.9rem;
+}
+
+.btn-eliminar:hover {
+    background: linear-gradient(135deg, #c0392b, #a93226);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+    text-decoration: none;
+    color: white;
+}
+
+.btn-eliminar i {
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.3rem;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.btn-eliminar:hover i {
+    transform: scale(1.1);
+}
+
+/* IMAGEN CON ALTURA FIJA */
+.news-image {
+    position: relative;
+    overflow: hidden;
+    height: 220px;
+    flex-shrink: 0;
+}
+
+.news-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+/* Overlay que aparece al hacer hover */
+.hover-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    color: white;
+}
+
+.hover-overlay i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.hover-overlay span {
+    font-weight: 500;
+    font-size: 1.1rem;
+}
+
+.news-card-link:hover .hover-overlay {
+    opacity: 1;
+}
+
+.news-card-link:hover .news-image img {
+    transform: scale(1.1);
+}
+
+/* CONTENIDO CON FLEX GROW PARA OCUPAR ESPACIO RESTANTE */
+.news-content {
+    padding: 1.5rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 4rem;
+}
+
+.news-category {
+    background: #f39c12;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-block;
+    margin-bottom: 1rem;
+    align-self: flex-start;
+}
+
+/* TÍTULO CON ALTURA MÍNIMA Y LÍNEAS LIMITADAS */
+.news-content h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: #2c3e50;
+    line-height: 1.4;
+    min-height: 3.6em;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* DESCRIPCIÓN CON LÍNEAS LIMITADAS */
+.news-content p {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 4.8em;
+}
+
+.news-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    color: #999;
+}
+
+.news-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* TAGS CON ALTURA FIJA */
+.article-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    min-height: 2rem;
+    align-content: flex-start;
+}
+
+.tag {
+    background: #ecf0f1;
+    color: #3498db;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* INDICADOR DE LEER MÁS EN LA PARTE INFERIOR */
+.read-more-indicator {
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid #ecf0f1;
+    margin-top: auto;
+}
+
+.read-more-indicator span {
+    color: #3498db;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: gap 0.3s ease;
+}
+
+.news-card-link:hover .read-more-indicator span {
+    gap: 0.75rem;
+}
+
+.read-more-indicator i {
+    transition: transform 0.3s ease;
+}
+
+.news-card-link:hover .read-more-indicator i {
+    transform: translateX(5px);
+}
+
+/* GRID MODIFICADO PARA ANCHO FIJO */
+.news-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* CENTRAR LAS TARJETAS */
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+/* ALTERNATIVA CON GRID MÁS CONTROLADO */
+.news-grid-alternative {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 370px); /* COLUMNAS DE ANCHO FIJO */
+    justify-content: center; /* CENTRAR EL GRID */
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+/* Tarjeta destacada */
+.featured {
+    border: 3px solid #f39c12;
+}
+
+.featured::before {
+    content: "Destacado";
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #f39c12;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    z-index: 5;
+}
+
+/* Paginación */
+.news-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 3rem;
+}
+
+.btn-pagination {
+    background: #3498db;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-pagination:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: white;
+}
+
+.page-info {
+    color: #666;
+    font-weight: 500;
+}
+
+/* Estado vacío */
+.no-articles {
+    text-align: center;
+    padding: 4rem 0;
+}
+
+.empty-state h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    color: #666;
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .news-grid {
+        justify-content: space-around; /* DISTRIBUIR MEJOR EN PANTALLAS MEDIANAS */
+    }
+}
+
+@media (max-width: 768px) {
+    .btn-crear-noticia {
+        padding: 0.8rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .btn-crear-noticia i {
+        font-size: 1rem;
+        padding: 0.4rem;
+    }
+    
+    .btn-back-filter {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.85rem;
+    }
+    
+    .btn-modificar {
+        padding: 0.5rem 1.2rem;
+        font-size: 0.85rem;
+    }
+    
+    .btn-eliminar {
+        padding: 0.5rem 1.2rem;
+        font-size: 0.85rem;
+    }
+    
+    /* TARJETAS EN MÓVIL SE ADAPTAN AL ANCHO DISPONIBLE */
+    .news-card-container {
+        width: 100%;
+        max-width: 370px; /* MÁXIMO ANCHO EN MÓVIL */
+        margin: 0 auto;
+    }
+    
+    .news-grid {
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+    }
+    
+    .news-card-link:hover {
+        transform: none;
+    }
+    
+    .hover-overlay {
+        display: none;
+    }
+    
+    .news-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .news-pagination {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    /* En móvil, los botones se muestran siempre */
+    .article-actions {
+        position: static;
+        opacity: 1;
+        transform: translateY(0);
+        background: rgba(248, 249, 250, 1);
+        margin-top: 0.5rem;
+    }
+    
+    .news-content {
+        padding-bottom: 1.5rem;
+    }
+    
+    .news-image {
+        height: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .news-card-container {
+        width: 100%;
+        margin: 0;
+    }
+    
+    .news-content {
+        padding: 1rem;
+    }
+    
+    .news-content h3 {
+        font-size: 1.1rem;
+        min-height: 3em;
+    }
+    
+    .news-content p {
+        min-height: 4.2em;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+    }
+    
+    .tag {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.6rem;
+    }
+    
+    .btn-crear-noticia {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+    }
+    
+    .btn-modificar {
+        padding: 0.4rem 1rem;
+        font-size: 0.8rem;
+    }
+    
+    .btn-eliminar {
+        padding: 0.4rem 1rem;
+        font-size: 0.8rem;
+    }
+    
+    .article-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    
+    .news-image {
+        height: 180px;
+    }
+}
+</style>
+
+{% endblock contenido_cuerpo %}

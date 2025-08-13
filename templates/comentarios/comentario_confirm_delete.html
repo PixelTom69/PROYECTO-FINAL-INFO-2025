@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block contenido_cuerpo %}
+<section class="delete-confirmation-section">
+    <div class="container">
+        <div class="delete-confirmation-container">
+            <!-- Icono de advertencia -->
+            <div class="warning-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            
+            <!-- Contenido principal -->
+            <div class="confirmation-content">
+                <h2 class="confirmation-title">¿Confirmar eliminación?</h2>
+                <p class="confirmation-message">
+                    Estás a punto de eliminar el artículo:
+                </p>
+                <div class="article-preview">
+                    <h3>"{{ object.titulo }}"</h3>
+                    {% if object.imagen_destacada %}
+                        <img src="{{ object.imagen_destacada.url }}" alt="{{ object.titulo }}" class="preview-image">
+                    {% endif %}
+                </div>
+                <p class="warning-text">
+                    <i class="fas fa-info-circle"></i>
+                    Esta acción no se puede deshacer. El artículo se eliminará permanentemente.
+                </p>
+            </div>
+            
+            <!-- Formulario -->
+            <form method="post" class="confirmation-form">
+                {% csrf_token %}
+                {{ form }}
+                
+                <div class="button-group">
+                    <button type="submit" class="btn-confirm">
+                        <i class="fas fa-trash-alt"></i>
+                        Sí, eliminar artículo
+                    </button>
+                    <a href="{% url 'articulos:path_listar_articulos' %}" class="btn-cancel">
+                        <i class="fas fa-arrow-left"></i>
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<style>
+.delete-confirmation-section {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    padding: 2rem 0;
+}
+
+.delete-confirmation-container {
+    background: white;
+    border-radius: 20px;
+    padding: 3rem;
+    max-width: 600px;
+    margin: 0 auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.delete-confirmation-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #e74c3c, #f39c12, #e74c3c);
+}
+
+.warning-icon {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.warning-icon i {
+    font-size: 2.5rem;
+    color: white;
+}
+
+.confirmation-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.confirmation-message {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.article-preview {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    border-left: 4px solid #e74c3c;
+}
+
+.article-preview h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+.preview-image {
+    max-width: 200px;
+    max-height: 120px;
+    border-radius: 10px;
+    object-fit: cover;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.warning-text {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 10px;
+    padding: 1rem;
+    color: #856404;
+    font-weight: 500;
+    margin: 2rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.warning-text i {
+    color: #f39c12;
+}
+
+.confirmation-form {
+    margin-top: 2rem;
+}
+
+.button-group {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-confirm {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.3);
+    text-decoration: none;
+}
+
+.btn-confirm:hover {
+    background: linear-gradient(135deg, #c0392b, #a93226);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(231, 76, 60, 0.4);
+}
+
+.btn-confirm i {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.5rem;
+    border-radius: 50%;
+    font-size: 0.9rem;
+}
+
+.btn-cancel {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(149, 165, 166, 0.3);
+    text-decoration: none;
+}
+
+.btn-cancel:hover {
+    background: linear-gradient(135deg, #7f8c8d, #6c7b7d);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(149, 165, 166, 0.4);
+    text-decoration: none;
+    color: white;
+}
+
+.btn-cancel i {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.5rem;
+    border-radius: 50%;
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .delete-confirmation-container {
+        margin: 1rem;
+        padding: 2rem 1.5rem;
+    }
+    
+    .confirmation-title {
+        font-size: 1.5rem;
+    }
+    
+    .button-group {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn-confirm,
+    .btn-cancel {
+        width: 100%;
+        max-width: 280px;
+        justify-content: center;
+    }
+    
+    .warning-icon {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .warning-icon i {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .delete-confirmation-container {
+        padding: 1.5rem 1rem;
+    }
+    
+    .confirmation-title {
+        font-size: 1.3rem;
+    }
+    
+    .confirmation-message {
+        font-size: 1rem;
+    }
+    
+    .article-preview h3 {
+        font-size: 1.1rem;
+    }
+    
+    .btn-confirm,
+    .btn-cancel {
+        padding: 0.8rem 1.5rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Animación de entrada */
+.delete-confirmation-container {
+    animation: slideInDown 0.5s ease-out;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Focus states para accesibilidad */
+.btn-confirm:focus,
+.btn-cancel:focus {
+    outline: 3px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
+}
+</style>
+{% endblock contenido_cuerpo %}

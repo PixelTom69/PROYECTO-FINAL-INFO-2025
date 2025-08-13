@@ -1,0 +1,850 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block contenido_cuerpo %}
+<!-- News Section -->
+<section class="news-section" id="noticias">
+    <div class="container">
+        <h2 class="section-title">Noticias y Artículos</h2>
+        
+        <!-- Botón crear noticia debajo del título - SOLO PARA STAFF -->
+        <div class="create-button-container">
+            {% if user.is_staff %}
+            <a href="{% url 'articulos:path_crear_articulo' %}" class="btn-crear-noticia">
+                <i class="fas fa-plus"></i>
+                Crear Nuevo Artículo
+            </a>
+            {% endif %}
+        </div>
+
+        <!-- Filtro de Categorías -->
+        <div class="categories-filter">
+            <h3 class="filter-title">
+                <i class="fas fa-filter"></i>
+                Filtrar por Categoría:
+            </h3>
+            <div class="categories-container">
+                <!-- Botón para mostrar todos -->
+                <a href="{% url 'articulos:path_listar_articulos' %}" class="category-btn category-all active">
+                    <i class="fas fa-th-large"></i>
+                    Todas las Categorías
+                </a>
+                
+                <!-- Categorías dinámicas -->
+                {% for categoria in categorias %}
+                    <a href="{% url 'articulos:path_filtro_categoria' categoria.pk %}" class="category-btn">
+                        <i class="fas fa-tag"></i>
+                        {{ categoria.nombre }}
+                    </a>
+                {% empty %}
+                    <p class="no-categories">No hay categorías disponibles</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Filtro de Ordenamiento por Fecha -->
+        <div class="date-filter">
+            <h3 class="filter-title">
+                <i class="fas fa-sort"></i>
+                Ordenar por Fecha:
+            </h3>
+            <div class="date-container">
+                <!-- Botón para orden por defecto -->
+                <a href="{% url 'articulos:path_listar_articulos' %}" class="date-btn {% if not request.GET.orden %}active{% endif %}">
+                    <i class="fas fa-list"></i>
+                    Por Defecto
+                </a>
+                
+                <!-- Orden descendente (más nuevos primero) -->
+                <a href="{% url 'articulos:path_listar_articulos' %}?orden=dsc" class="date-btn {% if request.GET.orden == 'dsc' %}active{% endif %}">
+                    <i class="fas fa-sort-amount-down"></i>
+                    Más Recientes
+                </a>
+                
+                <!-- Orden ascendente (más antiguos primero) -->
+                <a href="{% url 'articulos:path_listar_articulos' %}?orden=asc" class="date-btn {% if request.GET.orden == 'asc' %}active{% endif %}">
+                    <i class="fas fa-sort-amount-up"></i>
+                    Más Antiguos
+                </a>
+            </div>
+        </div>
+
+        {% if articulos %}
+            <div class="news-grid">
+                {% for articulo in articulos %}
+                    <div class="news-card-container">
+                        <!-- Envolver toda la tarjeta en un enlace -->
+                        <a href="{% url 'articulos:path_detalle_articulo' articulo.pk %}" class="news-card-link">
+                            <article class="news-card {% if forloop.first %}featured{% endif %}">
+                                <div class="news-image">
+                                    {% if articulo.imagen_destacada %}
+                                        <img src="{{ articulo.imagen_destacada.url }}" alt="{{ articulo.titulo }}">
+                                    {% else %}
+                                        <img src="{% static 'img/default-news.jpg' %}" alt="{{ articulo.titulo }}">
+                                    {% endif %}
+                                    <!-- Overlay para indicar que es clickeable -->
+                                    <div class="hover-overlay">
+                                        <i class="fas fa-eye"></i>
+                                        <span>Ver artículo</span>
+                                    </div>
+                                </div>
+                                <div class="news-content">
+                                    <span class="news-category">{{ articulo.categoria.nombre|upper|default:"TURISMO" }}</span>
+                                    <h3>{{ articulo.titulo }}</h3>
+                                    <p>{{ articulo.resumen|truncatewords:25 }}</p>
+                                    <div class="news-meta">
+                                        <span><i class="far fa-calendar"></i> {{ articulo.creado|date:"d M Y" }}</span>
+                                        <span><i class="far fa-clock"></i> {{ articulo.modificado|timesince }} ago</span>
+                                    </div>
+                                    
+                                    <!-- Tags si existen -->
+                                    {% if articulo.tags %}
+                                        <div class="article-tags">
+                                            {% for tag in articulo.tags.all %}
+                                                <span class="tag">#{{ tag.name }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Indicador de leer más -->
+                                    <div class="read-more-indicator">
+                                        <span>Leer más <i class="fas fa-arrow-right"></i></span>
+                                    </div>
+                                </div>
+                            </article>
+                        </a>
+                        
+                        <!-- Botones de acción SOLO PARA STAFF -->
+                        {% if user.is_staff %}
+                        <div class="article-actions">
+                            <a href="{% url 'articulos:path_modificar_articulo' articulo.pk %}" class="btn-modificar">
+                                <i class="fas fa-edit"></i>
+                                Modificar
+                            </a>
+                            <a href="{% url 'articulos:path_borrar_articulo' articulo.pk %}" class="btn-eliminar">
+                                <i class="fas fa-trash-alt"></i>
+                                Eliminar
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Paginación si es necesaria -->
+            {% if is_paginated %}
+                <div class="news-pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}" class="btn-pagination">« Anterior</a>
+                    {% endif %}
+                    
+                    <span class="page-info">
+                        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                    </span>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="btn-pagination">Siguiente »</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+            
+        {% else %}
+            <!-- Estado vacío -->
+            <div class="no-articles">
+                <div class="empty-state">
+                    <i class="fas fa-newspaper" style="font-size: 4rem; color: #ccc; margin-bottom: 1rem;"></i>
+                    <h3>No hay artículos disponibles</h3>
+                    <p>Aún no se han publicado artículos en esta categoría. ¡Vuelve pronto para descubrir las últimas noticias sobre turismo en Chaco!</p>
+                    
+                    <!-- Botón para crear el primer artículo si es staff -->
+                    {% if user.is_staff %}
+                    <div class="first-article-cta">
+                        <a href="{% url 'articulos:path_crear_articulo' %}" class="btn-crear-primer-articulo">
+                            <i class="fas fa-plus-circle"></i>
+                            Crear el primer artículo
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<style>
+/* Estilos del filtro de fechas */
+.date-filter {
+    background: linear-gradient(135deg, #e8f4f8, #d1ecf1);
+    border-radius: 20px;
+    padding: 2rem;
+    margin: 1rem 0 2rem 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid #bee5eb;
+}
+
+.date-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+}
+
+.date-btn {
+    background: white;
+    color: #495057;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    border: 2px solid #bee5eb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-size: 0.9rem;
+}
+
+.date-btn:hover {
+    background: #17a2b8;
+    color: white;
+    border-color: #17a2b8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
+    text-decoration: none;
+}
+
+.date-btn i {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.date-btn.active {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+    border-color: #17a2b8;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(23, 162, 184, 0.4);
+    font-weight: 600;
+}
+
+.date-btn.active:hover {
+    background: linear-gradient(135deg, #138496, #117a8b);
+    border-color: #138496;
+}
+
+/* Estilos del filtro de categorías */
+.categories-filter {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 20px;
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid #dee2e6;
+}
+
+.filter-title {
+    color: #2c3e50;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.filter-title i {
+    color: #3498db;
+    font-size: 1.2rem;
+}
+
+.categories-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+}
+
+.category-btn {
+    background: white;
+    color: #495057;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    border: 2px solid #dee2e6;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-size: 0.9rem;
+}
+
+.category-btn:hover {
+    background: #3498db;
+    color: white;
+    border-color: #3498db;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    text-decoration: none;
+}
+
+.category-btn i {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.category-all {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    border-color: #28a745;
+    font-weight: 600;
+}
+
+.category-all:hover {
+    background: linear-gradient(135deg, #218838, #1ba085);
+    border-color: #218838;
+}
+
+.category-all.active {
+    background: linear-gradient(135deg, #218838, #1ba085);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+.no-categories {
+    color: #6c757d;
+    font-style: italic;
+    margin: 0;
+    padding: 1rem;
+    text-align: center;
+    background: white;
+    border-radius: 15px;
+    border: 2px dashed #dee2e6;
+}
+
+/* Contenedor del botón crear */
+.create-button-container {
+    text-align: center;
+    margin: 2rem 0;
+}
+
+/* Botón crear noticia */
+.btn-crear-noticia {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
+    font-size: 1.1rem;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-crear-noticia:hover {
+    background: linear-gradient(135deg, #218838, #1ba085);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(40, 167, 69, 0.4);
+    text-decoration: none;
+    color: white;
+}
+
+.btn-crear-noticia i {
+    font-size: 1.2rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.btn-crear-noticia:hover i {
+    transform: rotate(90deg);
+}
+
+/* Botón para crear el primer artículo */
+.first-article-cta {
+    margin-top: 2rem;
+}
+
+.btn-crear-primer-articulo {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(243, 156, 18, 0.3);
+    font-size: 1.1rem;
+}
+
+.btn-crear-primer-articulo:hover {
+    background: linear-gradient(135deg, #e67e22, #d35400);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(243, 156, 18, 0.4);
+    text-decoration: none;
+    color: white;
+}
+
+.btn-crear-primer-articulo i {
+    font-size: 1.2rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.btn-crear-primer-articulo:hover i {
+    transform: scale(1.1);
+}
+
+/* Contenedor de cada tarjeta con botón */
+.news-card-container {
+    position: relative;
+}
+
+/* Estilos para hacer las tarjetas clickeables */
+.news-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.news-card-link:hover {
+    text-decoration: none;
+    color: inherit;
+    transform: translateY(-10px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+.news-card-link:focus {
+    outline: 3px solid #f39c12;
+    outline-offset: 2px;
+}
+
+/* Estilos para las tarjetas */
+.news-card {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+/* Acciones del artículo - SOLO VISIBLE PARA STAFF */
+.article-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    background: rgba(248, 249, 250, 0.8);
+    border-radius: 0 0 15px 15px;
+    margin-top: -1rem;
+    backdrop-filter: blur(10px);
+}
+
+.btn-modificar {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    padding: 0.6rem 1.5rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    font-size: 0.9rem;
+}
+
+.btn-modificar:hover {
+    background: linear-gradient(135deg, #2980b9, #1f639a);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+    text-decoration: none;
+    color: white;
+}
+
+.btn-modificar i {
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.3rem;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.btn-modificar:hover i {
+    transform: rotate(15deg);
+}
+
+.btn-eliminar {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    padding: 0.6rem 1.5rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+    font-size: 0.9rem;
+}
+
+.btn-eliminar:hover {
+    background: linear-gradient(135deg, #c0392b, #a93226);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+    text-decoration: none;
+    color: white;
+}
+
+.btn-eliminar i {
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.3rem;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.btn-eliminar:hover i {
+    transform: scale(1.1);
+}
+
+.news-image {
+    position: relative;
+    overflow: hidden;
+    height: 250px;
+}
+
+.news-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+/* Overlay que aparece al hacer hover */
+.hover-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    color: white;
+}
+
+.hover-overlay i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.hover-overlay span {
+    font-weight: 500;
+    font-size: 1.1rem;
+}
+
+.news-card-link:hover .hover-overlay {
+    opacity: 1;
+}
+
+.news-card-link:hover .news-image img {
+    transform: scale(1.1);
+}
+
+/* Contenido de la tarjeta */
+.news-content {
+    padding: 1.5rem;
+}
+
+.news-category {
+    background: #f39c12;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-block;
+    margin-bottom: 1rem;
+}
+
+.news-content h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: #2c3e50;
+    line-height: 1.4;
+}
+
+.news-content p {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.news-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    color: #999;
+}
+
+.news-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Tags */
+.article-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.tag {
+    background: #ecf0f1;
+    color: #3498db;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Indicador de leer más */
+.read-more-indicator {
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid #ecf0f1;
+}
+
+.read-more-indicator span {
+    color: #3498db;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: gap 0.3s ease;
+}
+
+.news-card-link:hover .read-more-indicator span {
+    gap: 0.75rem;
+}
+
+.read-more-indicator i {
+    transition: transform 0.3s ease;
+}
+
+.news-card-link:hover .read-more-indicator i {
+    transform: translateX(5px);
+}
+
+/* Grid de noticias */
+.news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+/* Tarjeta destacada */
+.featured {
+    border: 3px solid #f39c12;
+}
+
+.featured::before {
+    content: "Destacado";
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #f39c12;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    z-index: 2;
+}
+
+/* Paginación */
+.news-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 3rem;
+}
+
+.btn-pagination {
+    background: #3498db;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-pagination:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: white;
+}
+
+.page-info {
+    color: #666;
+    font-weight: 500;
+}
+
+/* Estado vacío */
+.no-articles {
+    text-align: center;
+    padding: 4rem 0;
+}
+
+.empty-state h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    color: #666;
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .categories-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .date-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .category-btn, .date-btn {
+        justify-content: center;
+        padding: 0.6rem 1.2rem;
+    }
+    
+    .filter-title {
+        font-size: 1.1rem;
+    }
+    
+    .categories-filter, .date-filter {
+        padding: 1.5rem;
+    }
+    
+    .btn-crear-noticia {
+        padding: 0.8rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .btn-crear-noticia i {
+        font-size: 1rem;
+        padding: 0.4rem;
+    }
+    
+    .btn-modificar {
+        padding: 0.5rem 1.2rem;
+        font-size: 0.85rem;
+    }
+    
+    .btn-eliminar {
+        padding: 0.5rem 1.2rem;
+        font-size: 0.85rem;
+    }
+    
+    .news-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .news-card-link:hover {
+        transform: none;
+    }
+    
+    .hover-overlay {
+        display: none;
+    }
+    
+    .news-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .news-pagination {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .news-content {
+        padding: 1rem;
+    }
+    
+    .news-content h3 {
+        font-size: 1.1rem;
+    }
+    
+    .tag {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.6rem;
+    }
+    
+    .btn-crear-noticia {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+    }
+    
+    .btn-modificar {
+        padding: 0.4rem 1rem;
+        font-size: 0.8rem;
+    }
+    
+    .btn-eliminar {
+        padding: 0.4rem 1rem;
+        font-size: 0.8rem;
+    }
+    
+    .article-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: center;
+    }
+}
+</style>
+
+{% endblock contenido_cuerpo %}

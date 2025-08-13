@@ -1,0 +1,451 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block contenido_cuerpo %}
+<!-- Categories Section -->
+<section class="categories-section" id="categorias">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h2 class="section-title">Explorar por Categorías</h2>
+            <p class="section-subtitle">
+                Descubre nuestro contenido organizado por temas de interés. 
+                Encuentra artículos sobre turismo, cultura, deportes y mucho más.
+            </p>
+        </div>
+        
+        {% if categorias %}
+            <!-- Categories Counter -->
+            <div class="categories-counter">
+                <div class="counter-card">
+                    <div class="counter-number">{{ categorias|length }}</div>
+                    <div class="counter-text">
+                        {% if categorias|length == 1 %}
+                            Categoría disponible
+                        {% else %}
+                            Categorías disponibles
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Categories Grid -->
+            <div class="categorias-grid">
+                {% for categoria in categorias %}
+                    <a href="{% url 'articulos:path_filtro_categoria' categoria.pk %}" class="categoria-link">
+                        <div class="categoria-card">
+                            <!-- Image Container -->
+                            <div class="categoria-image-container">
+                                {% if categoria.imagen %}
+                                    <img src="{{ categoria.imagen.url }}" alt="{{ categoria.nombre }}" class="categoria-imagen">
+                                {% else %}
+                                    <div class="categoria-placeholder">
+                                        <i class="fas fa-image"></i>
+                                        <span>Sin imagen</span>
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- Hover Overlay -->
+                                <div class="categoria-overlay">
+                                    <div class="overlay-content">
+                                        <i class="fas fa-eye"></i>
+                                        <span>Ver Artículos</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Content -->
+                            <div class="categoria-content">
+                                <h3 class="categoria-nombre">{{ categoria.nombre }}</h3>
+                                <p class="categoria-descripcion">
+                                    Explora contenido sobre {{ categoria.nombre|lower }}
+                                </p>
+                                
+                                <!-- Category Stats -->
+                                <div class="categoria-stats">
+                                    <div class="stat-item">
+                                        <i class="fas fa-newspaper"></i>
+                                        <span>Artículos</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <i class="fas fa-arrow-right"></i>
+                                        <span>Explorar</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+            
+        {% else %}
+            <!-- Empty State -->
+            <div class="empty-categories">
+                <div class="empty-state">
+                    <i class="fas fa-th-large"></i>
+                    <h3>No hay categorías disponibles</h3>
+                    <p>
+                        Aún no se han creado categorías. Las categorías te ayudan a organizar 
+                        y encontrar contenido de manera más eficiente.
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<style>
+/* Categories Page Styles */
+.categories-section {
+    padding: 8rem 0 5rem;
+    background: var(--gray-light);
+    min-height: 100vh;
+}
+
+/* Page Header */
+.page-header {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.section-subtitle {
+    color: var(--text-light);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 1rem auto 0;
+    line-height: 1.6;
+}
+
+/* Categories Counter */
+.categories-counter {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 3rem;
+}
+
+.counter-card {
+    background: var(--white);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    text-align: center;
+    min-width: 200px;
+}
+
+.counter-number {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    line-height: 1;
+}
+
+.counter-text {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    font-weight: 500;
+}
+
+/* Categories Grid */
+.categorias-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.categoria-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.categoria-link:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+.categoria-card {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.categoria-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    transform: scaleX(0);
+    transition: var(--transition);
+}
+
+.categoria-card:hover::before {
+    transform: scaleX(1);
+}
+
+.categoria-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Image Container */
+.categoria-image-container {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+    background: var(--gray-medium);
+}
+
+.categoria-imagen {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: var(--transition);
+}
+
+.categoria-card:hover .categoria-imagen {
+    transform: scale(1.1);
+}
+
+.categoria-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--gray-medium), var(--gray-light));
+    color: var(--text-light);
+    border: 2px dashed #ced4da;
+    transition: var(--transition);
+}
+
+.categoria-placeholder i {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.6;
+}
+
+.categoria-placeholder span {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.categoria-card:hover .categoria-placeholder {
+    background: linear-gradient(135deg, #dee2e6, var(--gray-medium));
+    border-color: var(--primary-color);
+}
+
+.categoria-card:hover .categoria-placeholder i {
+    opacity: 0.8;
+    color: var(--primary-color);
+}
+
+/* Overlay */
+.categoria-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(44, 95, 124, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.categoria-card:hover .categoria-overlay {
+    opacity: 1;
+}
+
+.overlay-content {
+    text-align: center;
+    color: var(--white);
+}
+
+.overlay-content i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.overlay-content span {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+/* Content */
+.categoria-content {
+    padding: 1.5rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.categoria-nombre {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0 0 0.75rem 0;
+    transition: var(--transition);
+}
+
+.categoria-card:hover .categoria-nombre {
+    color: var(--primary-color);
+}
+
+.categoria-descripcion {
+    color: var(--text-light);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    flex-grow: 1;
+}
+
+/* Stats */
+.categoria-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--gray-medium);
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    transition: var(--transition);
+}
+
+.stat-item i {
+    color: var(--accent-color);
+    font-size: 0.9rem;
+}
+
+.categoria-card:hover .stat-item {
+    color: var(--primary-color);
+}
+
+.categoria-card:hover .stat-item:last-child i {
+    transform: translateX(3px);
+}
+
+/* Empty State */
+.empty-categories {
+    display: flex;
+    justify-content: center;
+    padding: 4rem 0;
+}
+
+.empty-state {
+    background: var(--white);
+    padding: 3rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    text-align: center;
+    max-width: 500px;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.empty-state p {
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .categories-section {
+        padding: 6rem 0 3rem;
+    }
+    
+    .categorias-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .categoria-content {
+        padding: 1.25rem;
+    }
+    
+    .categoria-nombre {
+        font-size: 1.3rem;
+    }
+    
+    .counter-card {
+        padding: 1.5rem;
+        min-width: 160px;
+    }
+    
+    .counter-number {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .categorias-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .categoria-content {
+        padding: 1rem;
+    }
+    
+    .categoria-nombre {
+        font-size: 1.2rem;
+    }
+    
+    .categoria-image-container {
+        height: 180px;
+    }
+    
+    .empty-state {
+        padding: 2rem;
+        margin: 0 1rem;
+    }
+    
+    .counter-card {
+        padding: 1rem;
+        min-width: 140px;
+    }
+    
+    .counter-number {
+        font-size: 2rem;
+    }
+    
+    .categoria-stats {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: flex-start;
+    }
+}
+</style>
+
+{% endblock contenido_cuerpo %}

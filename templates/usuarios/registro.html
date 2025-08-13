@@ -1,0 +1,370 @@
+{% extends 'base.html' %}
+{% block contenido_cuerpo %}
+<div class="register-container">
+    <div class="register-card">
+        <div class="register-header">
+            <div class="register-icon">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h2>Crear Cuenta</h2>
+            <p>Únete a la comunidad de Turismo Chaco</p>
+        </div>
+        
+        <form method="POST" class="register-form">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+                <div class="error-messages">
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <div class="error-message">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}" class="field-label">
+                        {% if field.name == 'username' %}
+                            <i class="fas fa-user"></i> Nombre de Usuario
+                        {% elif field.name == 'first_name' %}
+                            <i class="fas fa-id-badge"></i> Nombre
+                        {% elif field.name == 'last_name' %}
+                            <i class="fas fa-id-badge"></i> Apellido
+                        {% elif field.name == 'email' %}
+                            <i class="fas fa-envelope"></i> Correo Electrónico
+                        {% elif field.name == 'password1' %}
+                            <i class="fas fa-lock"></i> Contraseña
+                        {% elif field.name == 'password2' %}
+                            <i class="fas fa-lock"></i> Confirmar Contraseña
+                        {% else %}
+                            <i class="fas fa-info-circle"></i> {{ field.label }}
+                        {% endif %}
+                    </label>
+                    <div class="input-container">
+                        {% if field.name == 'username' %}
+                            <i class="fas fa-user input-icon"></i>
+                        {% elif field.name == 'first_name' or field.name == 'last_name' %}
+                            <i class="fas fa-id-badge input-icon"></i>
+                        {% elif field.name == 'email' %}
+                            <i class="fas fa-envelope input-icon"></i>
+                        {% elif field.name == 'password1' or field.name == 'password2' %}
+                            <i class="fas fa-lock input-icon"></i>
+                        {% else %}
+                            <i class="fas fa-info-circle input-icon"></i>
+                        {% endif %}
+                        {{ field }}
+                    </div>
+                    {% if field.help_text %}
+                        <div class="help-text">
+                            <i class="fas fa-info-circle"></i>
+                            {{ field.help_text }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            
+            <div class="form-options">
+                <label class="terms-agree">
+                    <input type="checkbox" name="terms" required>
+                    <span class="checkmark"></span>
+                    Acepto los <a href="#" class="terms-link">términos y condiciones</a>
+                </label>
+            </div>
+            
+            <button type="submit" class="register-btn">
+                <i class="fas fa-user-plus"></i>
+                Crear Cuenta
+            </button>
+        </form>
+        
+        <div class="register-footer">
+            <p>¿Ya tienes una cuenta? <a href="{% url 'usuarios:path_login' %}" class="login-link">Inicia sesión aquí</a></p>
+        </div>
+    </div>
+</div>
+
+<style>
+.register-container {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    padding: 2rem 1rem;
+}
+
+.register-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    padding: 3rem;
+    width: 100%;
+    max-width: 550px;
+    position: relative;
+    overflow: hidden;
+}
+
+.register-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #28a745, #20c997, #17a2b8);
+}
+
+.register-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.register-icon {
+    font-size: 4rem;
+    color: #28a745;
+    margin-bottom: 1rem;
+}
+
+.register-header h2 {
+    color: #333;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.register-header p {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.error-messages {
+    margin-bottom: 1.5rem;
+}
+
+.error-message {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    border-left: 4px solid #dc3545;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.field-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.field-label i {
+    color: #28a745;
+    margin-right: 0.5rem;
+}
+
+.input-container {
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+    z-index: 2;
+}
+
+.input-container input,
+.input-container select,
+.input-container textarea {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    border: 2px solid #e1e5e9;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+    font-family: inherit;
+}
+
+.input-container input:focus,
+.input-container select:focus,
+.input-container textarea:focus {
+    outline: none;
+    border-color: #28a745;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+}
+
+.help-text {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: #666;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    line-height: 1.4;
+}
+
+.help-text i {
+    color: #17a2b8;
+    margin-top: 0.1rem;
+    flex-shrink: 0;
+}
+
+.form-options {
+    margin-bottom: 2rem;
+}
+
+.terms-agree {
+    display: flex;
+    align-items: flex-start;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.4;
+}
+
+.terms-agree input[type="checkbox"] {
+    display: none;
+}
+
+.checkmark {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    margin-right: 0.75rem;
+    margin-top: 0.1rem;
+    position: relative;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.terms-agree input[type="checkbox"]:checked + .checkmark {
+    background: #28a745;
+    border-color: #28a745;
+}
+
+.terms-agree input[type="checkbox"]:checked + .checkmark::after {
+    content: '\f00c';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    color: white;
+    font-size: 10px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.terms-link {
+    color: #28a745;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.terms-link:hover {
+    color: #20c997;
+}
+
+.register-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.register-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(40, 167, 69, 0.3);
+}
+
+.register-btn:active {
+    transform: translateY(0);
+}
+
+.register-footer {
+    text-align: center;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    color: #666;
+}
+
+.login-link {
+    color: #28a745;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.login-link:hover {
+    color: #20c997;
+}
+
+@media (max-width: 768px) {
+    .register-container {
+        padding: 1rem;
+    }
+    
+    .register-card {
+        padding: 2rem;
+        max-width: 100%;
+    }
+    
+    .register-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .register-icon {
+        font-size: 3rem;
+    }
+    
+    .help-text {
+        font-size: 0.75rem;
+    }
+}
+
+/* Estilos específicos para campos de Django */
+.register-form input[type="text"],
+.register-form input[type="email"],
+.register-form input[type="password"] {
+    box-sizing: border-box;
+}
+
+/* Ocultar labels por defecto de Django ya que usamos las personalizadas */
+.register-form label[for] {
+    display: none;
+}
+
+/* Mostrar solo nuestras labels personalizadas */
+.field-label {
+    display: block !important;
+}
+</style>
+{% endblock contenido_cuerpo %}

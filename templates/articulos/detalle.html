@@ -1,0 +1,758 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block contenido_cuerpo %}
+<!-- Hero Section del Artículo -->
+<section class="hero hero-article" {% if articulo.imagen_destacada %}data-bg="{{ articulo.imagen_destacada.url }}"{% else %}data-bg="{% static 'img/portada.jpg' %}"{% endif %}>
+    <div class="hero-content">
+        <div class="container">
+            <!-- Categoría -->
+            <div style="margin-bottom: 1rem;">
+                <span class="news-category">{{ articulo.categoria.nombre|upper|default:"TURISMO" }}</span>
+            </div>
+            
+            <!-- Título principal -->
+            <h1 class="hero-title" style="font-size: 2.5rem; margin-bottom: 1rem;">{{ articulo.titulo }}</h1>
+        </div>
+    </div>
+</section>
+
+<!-- Contenido del Artículo -->
+<section class="news-section">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 1fr 300px; gap: 3rem; max-width: 1200px; margin: 0 auto;">
+            
+            <!-- Contenido principal -->
+            <main class="news-card" style="padding: 3rem; margin-bottom: 0;">
+                <div class="news-content" style="padding: 0;">
+                    
+                    <!-- Contenido del artículo -->
+                    <div style="font-size: 1.1rem; line-height: 1.8; color: var(--text-dark);">
+                        {{ articulo.contenido|safe }}
+                    </div>
+
+                    <!-- Sección de Comentarios Mejorada -->
+                    <div class="comments-section" style="margin-top: 4rem; padding-top: 3rem; border-top: 3px solid var(--primary-color);">
+                        <div class="comments-header" style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                            <i class="fas fa-comments" style="color: var(--accent-color); font-size: 1.5rem;"></i>
+                            <h2 style="color: var(--text-dark); font-size: 1.8rem; margin: 0; font-weight: 600;">
+                                Comentarios
+                                <span style="color: var(--text-light); font-size: 1rem; font-weight: 400;">
+                                    ({{ articulo.misComentarios.count|default:"0" }})
+                                </span>
+                            </h2>
+                        </div>
+
+                        <!-- Formulario para nuevo comentario -->
+                        {% if user.is_authenticated %}
+                        <div class="comment-form-container" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 2rem; border-radius: 15px; margin-bottom: 3rem; border: 2px solid #e3f2fd;">
+                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                                <div class="user-avatar" style="width: 45px; height: 45px; background: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">
+                                    {{ user.username|first|upper }}
+                                </div>
+                                <div>
+                                    <h4 style="margin: 0; color: var(--text-dark); font-size: 1.1rem;">{{ user.username }}</h4>
+                                    <p style="margin: 0; color: var(--text-light); font-size: 0.9rem;">Escribir un comentario</p>
+                                </div>
+                            </div>
+                            
+                            <form method="POST" action="{% url 'comentarios:path_comentar' articulo.pk %}" class="comment-form">
+                                {% csrf_token %}
+                                <div style="margin-bottom: 1.5rem;">
+                                    <textarea 
+                                        name="comentario" 
+                                        rows="4" 
+                                        placeholder="Comparte tu opinión sobre este artículo..."
+                                        style="width: 100%; padding: 1rem; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem; line-height: 1.5; resize: vertical; font-family: inherit; transition: border-color 0.3s ease;"
+                                        required
+                                        onfocus="this.style.borderColor='var(--primary-color)'"
+                                        onblur="this.style.borderColor='#ddd'"></textarea>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <small style="color: var(--text-light); font-size: 0.85rem;">
+                                        <i class="fas fa-info-circle" style="margin-right: 0.5rem;"></i>
+                                        Tu comentario será visible públicamente
+                                    </small>
+                                    <button type="submit" class="btn-comment-submit" style="background: var(--primary-color); color: white; border: none; padding: 0.75rem 2rem; border-radius: 25px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 0.5rem;">
+                                        <i class="fas fa-paper-plane"></i>
+                                        <span>Publicar comentario</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        {% else %}
+                        <div class="login-prompt" style="background: linear-gradient(135deg, #fff3cd, #ffeaa7); padding: 2rem; border-radius: 15px; margin-bottom: 3rem; border: 2px solid #f39c12; text-align: center;">
+                            <i class="fas fa-sign-in-alt" style="color: #f39c12; font-size: 2rem; margin-bottom: 1rem;"></i>
+                            <h4 style="color: #856404; margin-bottom: 0.5rem;">¿Quieres participar en la conversación?</h4>
+                            <p style="color: #856404; margin-bottom: 1.5rem;">Inicia sesión para dejar tu comentario</p>
+                            <a href="{% url 'usuarios:path_login' %}" class="btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-user"></i>
+                                <span>Iniciar sesión</span>
+                            </a>
+                        </div>
+                        {% endif %}
+
+                        <!-- Lista de comentarios -->
+                        <div class="comments-list">
+                            {% if articulo.misComentarios.exists %}
+                                {% for comentario in articulo.misComentarios %}
+                                <div class="comment-item" style="background: white; padding: 2rem; border-radius: 15px; margin-bottom: 1.5rem; border: 1px solid #e9ecef; box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: all 0.3s ease;" onmouseover="this.style.boxShadow='0 5px 20px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='0 2px 10px rgba(0,0,0,0.05)'">
+                                    <div class="comment-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                                        <div style="display: flex; align-items: center; gap: 1rem;">
+                                            <div class="user-avatar" style="width: 40px; height: 40px; background: var(--accent-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                                {{ comentario.usuario.username|first|upper }}
+                                            </div>
+                                            <div>
+                                                <h5 style="margin: 0; color: var(--text-dark); font-size: 1rem; font-weight: 600;">
+                                                    {{ comentario.usuario.username }}
+                                                    {% if comentario.usuario.is_staff %}
+                                                        <span style="background: var(--primary-color); color: white; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.7rem; margin-left: 0.5rem;">STAFF</span>
+                                                    {% endif %}
+                                                </h5>
+                                                <p style="margin: 0; color: var(--text-light); font-size: 0.85rem;">
+                                                    <i class="fas fa-clock" style="margin-right: 0.3rem;"></i>
+                                                    {{ comentario.creado|date:"d/m/Y H:i" }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        
+                                        {% if comentario.usuario == user or user.is_staff %}
+                                        <div class="comment-actions">
+                                            <a href="{% url 'comentarios:path_eliminar_comentario' comentario.pk %}" 
+                                               class="btn-delete-comment" 
+                                               style="color: #dc3545; text-decoration: none; padding: 0.5rem; border-radius: 8px; transition: all 0.3s ease; display: flex; align-items: center; gap: 0.3rem; font-size: 0.9rem;"
+                                               onclick="return confirm('¿Estás seguro de que quieres eliminar este comentario?')"
+                                               onmouseover="this.style.backgroundColor='#ffebee'; this.style.color='#c62828'"
+                                               onmouseout="this.style.backgroundColor='transparent'; this.style.color='#dc3545'">
+                                                <i class="fas fa-trash-alt"></i>
+                                                <span>Eliminar</span>
+                                            </a>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="comment-content" style="color: var(--text-dark); line-height: 1.6; font-size: 1rem; padding-left: 3rem;">
+                                        {{ comentario.texto|linebreaks }}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="no-comments" style="text-align: center; padding: 3rem; background: #f8f9fa; border-radius: 15px; border: 2px dashed #dee2e6;">
+                                    <i class="fas fa-comment-slash" style="color: #6c757d; font-size: 3rem; margin-bottom: 1rem;"></i>
+                                    <h4 style="color: #6c757d; margin-bottom: 0.5rem;">Aún no hay comentarios</h4>
+                                    <p style="color: #6c757d; margin: 0;">¡Sé el primero en comentar este artículo!</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Tags del artículo -->
+                    {% if articulo.tags %}
+                        <div style="margin-top: 3rem; padding-top: 2rem; border-top: 2px solid var(--gray-medium);">
+                            <h4 style="color: var(--text-dark); margin-bottom: 1rem; font-size: 1.1rem;">
+                                <i class="fas fa-tags" style="color: var(--accent-color); margin-right: 0.5rem;"></i>
+                                Etiquetas relacionadas:
+                            </h4>
+
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                {% for tag in articulo.tags.all %}
+                                    <span class="news-category" style="background: var(--primary-color);">#{{ tag.name }}</span>
+                                {% empty %}
+                                    <span class="news-category" style="background: var(--primary-color);">#{{ articulo.tags }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Compartir en redes sociales -->
+                    <div style="margin-top: 3rem; padding-top: 2rem; border-top: 2px solid var(--gray-medium);">
+                        <h4 style="color: var(--text-dark); margin-bottom: 1rem; font-size: 1.1rem;">
+                            <i class="fas fa-share-alt" style="color: var(--accent-color); margin-right: 0.5rem;"></i>
+                            Compartir este artículo:
+                        </h4>
+                        <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+                            <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" 
+                               target="_blank" 
+                               class="btn-primary" 
+                               style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; font-size: 0.9rem; text-decoration: none; background: #3b5998;">
+                                <i class="fab fa-facebook-f"></i>
+                                <span>Facebook</span>
+                            </a>
+                            <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ articulo.titulo }}" 
+                               target="_blank" 
+                               class="btn-primary" 
+                               style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; font-size: 0.9rem; text-decoration: none; background: #1da1f2;">
+                                <i class="fab fa-twitter"></i>
+                                <span>Twitter</span>
+                            </a>
+                            <a href="https://wa.me/?text={{ articulo.titulo }} {{ request.build_absolute_uri }}" 
+                               target="_blank" 
+                               class="btn-primary" 
+                               style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; font-size: 0.9rem; text-decoration: none; background: #25d366;">
+                                <i class="fab fa-whatsapp"></i>
+                                <span>WhatsApp</span>
+                            </a>
+                            <a href="mailto:?subject={{ articulo.titulo }}&body=Te comparto este interesante artículo: {{ request.build_absolute_uri }}" 
+                               class="btn-primary" 
+                               style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; font-size: 0.9rem; text-decoration: none; background: #6c757d;">
+                                <i class="fas fa-envelope"></i>
+                                <span>Email</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            
+            <!-- Sidebar -->
+            <aside style="display: flex; flex-direction: column; gap: 2rem;">
+                
+                <!-- Acciones del artículo - SOLO PARA STAFF -->
+                {% if user.is_staff %}
+                <div class="highlight-card admin-actions-card">
+                    <h3 style="color: var(--primary-color); font-size: 1.2rem; margin-bottom: 1.5rem;">
+                        <i class="fas fa-cog" style="color: var(--accent-color); margin-right: 0.5rem;"></i>
+                        Gestionar artículo
+                    </h3>
+                    
+                    <div class="sidebar-actions">
+                        <a href="{% url 'articulos:path_modificar_articulo' articulo.pk %}" class="btn-sidebar-action btn-modificar-sidebar">
+                            <i class="fas fa-edit"></i>
+                            <div class="action-content">
+                                <strong>Modificar</strong>
+                                <span>Editar contenido del artículo</span>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'articulos:path_borrar_articulo' articulo.pk %}" class="btn-sidebar-action btn-eliminar-sidebar">
+                            <i class="fas fa-trash-alt"></i>
+                            <div class="action-content">
+                                <strong>Eliminar</strong>
+                                <span>Borrar artículo permanentemente</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Información del artículo -->
+                <div class="highlight-card">
+                    <h3 style="color: var(--primary-color); font-size: 1.2rem; margin-bottom: 1.5rem;">
+                        <i class="fas fa-info-circle" style="color: var(--accent-color); margin-right: 0.5rem;"></i>
+                        Información del artículo
+                    </h3>
+                    
+                    <div style="display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--gray-medium);">
+                        <i class="fas fa-calendar-plus" style="color: var(--accent-color); font-size: 1.1rem; margin-top: 0.2rem;"></i>
+                        <div style="flex: 1;">
+                            <strong style="display: block; color: var(--text-dark); font-weight: 600; margin-bottom: 0.25rem;">Fecha de publicación</strong>
+                            <span style="color: var(--text-light); font-size: 0.9rem;">{{ articulo.creado|date:"d/m/Y" }}</span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--gray-medium);">
+                        <i class="fas fa-edit" style="color: var(--accent-color); font-size: 1.1rem; margin-top: 0.2rem;"></i>
+                        <div style="flex: 1;">
+                            <strong style="display: block; color: var(--text-dark); font-weight: 600; margin-bottom: 0.25rem;">Última actualización</strong>
+                            <span style="color: var(--text-light); font-size: 0.9rem;">{{ articulo.modificado|date:"d/m/Y" }}</span>
+                        </div>
+                    </div>
+                    
+                    {% if articulo.categoria %}
+                        <div style="display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--gray-medium);">
+                            <i class="fas fa-tag" style="color: var(--accent-color); font-size: 1.1rem; margin-top: 0.2rem;"></i>
+                            <div style="flex: 1;">
+                                <strong style="display: block; color: var(--text-dark); font-weight: 600; margin-bottom: 0.25rem;">Categoría</strong>
+                                <span style="color: var(--text-light); font-size: 0.9rem;">{{ articulo.categoria.nombre }}</span>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if articulo.autor %}
+                        <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                            <i class="fas fa-user-edit" style="color: var(--accent-color); font-size: 1.1rem; margin-top: 0.2rem;"></i>
+                            <div style="flex: 1;">
+                                <strong style="display: block; color: var(--text-dark); font-weight: 600; margin-bottom: 0.25rem;">Autor</strong>
+                                <span style="color: var(--text-light); font-size: 0.9rem;">{{ articulo.autor }}</span>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Estadísticas de comentarios -->
+                <div class="highlight-card">
+                    <h3 style="color: var(--primary-color); font-size: 1.2rem; margin-bottom: 1.5rem;">
+                        <i class="fas fa-chart-bar" style="color: var(--accent-color); margin-right: 0.5rem;"></i>
+                        Participación
+                    </h3>
+                    
+                    <div class="stats" style="display: flex; flex-direction: column; gap: 1rem; margin: 0; text-align: center;">
+                        <div class="stat" style="background: linear-gradient(135deg, #e8f5e8, #c8e6c9); padding: 1.5rem; border-radius: 12px;">
+                            <h3 style="margin-bottom: 0.25rem; color: #2e7d32; font-size: 2rem;">{{ articulo.misComentarios.count }}</h3>
+                            <p style="font-size: 0.9rem; color: #388e3c; font-weight: 600; margin: 0;">
+                                Comentario{{ articulo.misComentarios.count|pluralize }}
+                            </p>
+                        </div>
+                        
+                        <div class="stat" style="background: linear-gradient(135deg, #e3f2fd, #bbdefb); padding: 1.5rem; border-radius: 12px;">
+                            <h3 style="margin-bottom: 0.25rem; color: #1565c0; font-size: 1.8rem;">{{ articulo.creado|date:"d" }}</h3>
+                            <p style="font-size: 0.9rem; color: #1976d2; font-weight: 600; margin: 0;">{{ articulo.creado|date:"M Y"|upper }}</p>
+                            <p style="font-size: 0.8rem; color: #42a5f5; margin: 0.5rem 0 0 0;">Fecha de publicación</p>
+                        </div>
+                        
+                        {% if user.is_staff %}
+                        <div class="stat" style="background: linear-gradient(135deg, #f3e5f5, #e1bee7); padding: 1rem; border-radius: 8px;">
+                            <p style="font-size: 0.85rem; color: #7b1fa2; margin: 0; font-weight: 500;">
+                                <i class="fas fa-eye" style="margin-right: 0.5rem;"></i>
+                                Vista de administrador
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Navegación adicional -->
+                <div class="highlight-card">
+                    <h3 style="color: var(--primary-color); font-size: 1.2rem; margin-bottom: 1.5rem;">
+                        <i class="fas fa-compass" style="color: var(--accent-color); margin-right: 0.5rem;"></i>
+                        Explorar más
+                    </h3>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <a href="{% url 'articulos:path_listar_articulos' %}" 
+                           style="display: flex; align-items: center; gap: 1rem; color: var(--text-dark); text-decoration: none; padding: 0.75rem; border-radius: 8px; transition: background-color 0.3s ease;"
+                           onmouseover="this.style.backgroundColor='#f8f9fa'"
+                           onmouseout="this.style.backgroundColor='transparent'">
+                            <i class="fas fa-newspaper" style="color: var(--accent-color);"></i>
+                            <span style="font-weight: 500;">Ver todas las noticias</span>
+                        </a>
+                        
+                        {% if articulo.categoria %}
+                        <a href="{% url 'articulos:path_filtro_categoria' articulo.categoria.pk %}" 
+                           style="display: flex; align-items: center; gap: 1rem; color: var(--text-dark); text-decoration: none; padding: 0.75rem; border-radius: 8px; transition: background-color 0.3s ease;"
+                           onmouseover="this.style.backgroundColor='#f8f9fa'"
+                           onmouseout="this.style.backgroundColor='transparent'">
+                            <i class="fas fa-tag" style="color: var(--accent-color);"></i>
+                            <span style="font-weight: 500;">Más de {{ articulo.categoria.nombre }}</span>
+                        </a>
+                        {% endif %}
+                        
+                        <a href="{% url 'path_home' %}" 
+                           style="display: flex; align-items: center; gap: 1rem; color: var(--text-dark); text-decoration: none; padding: 0.75rem; border-radius: 8px; transition: background-color 0.3s ease;"
+                           onmouseover="this.style.backgroundColor='#f8f9fa'"
+                           onmouseout="this.style.backgroundColor='transparent'">
+                            <i class="fas fa-home" style="color: var(--accent-color);"></i>
+                            <span style="font-weight: 500;">Ir al inicio</span>
+                        </a>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+
+<!-- Navegación inferior -->
+<section style="background: var(--text-dark); padding: 2rem 0;">
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="{% url 'articulos:path_listar_articulos' %}" 
+               class="btn-primary" 
+               style="display: flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+                <i class="fas fa-arrow-left"></i>
+                <span>Volver a noticias</span>
+            </a>
+            
+            <!-- Botones adicionales para staff en navegación inferior -->
+            {% if user.is_staff %}
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <a href="{% url 'articulos:path_crear_articulo' %}" 
+                   class="btn-secondary" 
+                   style="display: flex; align-items: center; gap: 0.5rem; text-decoration: none; background: #28a745;">
+                    <i class="fas fa-plus"></i>
+                    <span>Nuevo artículo</span>
+                </a>
+                
+                <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" 
+                        class="btn-secondary" 
+                        style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>Ir arriba</span>
+                </button>
+            </div>
+            {% else %}
+            <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" 
+                    class="btn-secondary" 
+                    style="display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-arrow-up"></i>
+                <span>Ir arriba</span>
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Estilos mejorados -->
+<style>
+/* Tarjeta de acciones en sidebar */
+.admin-actions-card {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-left: 4px solid var(--primary-color);
+    border: 2px solid #e3f2fd;
+}
+
+.sidebar-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.btn-sidebar-action {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.btn-modificar-sidebar {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    color: #1565c0;
+}
+
+.btn-modificar-sidebar:hover {
+    background: linear-gradient(135deg, #bbdefb, #90caf9);
+    border-color: #2196f3;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(33, 150, 243, 0.2);
+    color: #1565c0;
+    text-decoration: none;
+}
+
+.btn-eliminar-sidebar {
+    background: linear-gradient(135deg, #ffebee, #ffcdd2);
+    color: #c62828;
+}
+
+.btn-eliminar-sidebar:hover {
+    background: linear-gradient(135deg, #ffcdd2, #ef9a9a);
+    border-color: #f44336;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(244, 67, 54, 0.2);
+    color: #c62828;
+    text-decoration: none;
+}
+
+.btn-sidebar-action i {
+    font-size: 1.2rem;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 0.6rem;
+    border-radius: 50%;
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.action-content strong {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.action-content span {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+/* Estilos para comentarios */
+.btn-comment-submit:hover {
+    background: var(--accent-color) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.comment-form textarea:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--primary-color), 0.1);
+}
+
+/* Animaciones suaves */
+.comment-item {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Indicador de comentario nuevo */
+.comment-item.new-comment {
+    border-left: 4px solid var(--accent-color);
+    background: linear-gradient(135deg, #f8fff8, #e8f5e8);
+}
+
+/* Estilos responsive mejorados */
+@media (max-width: 768px) {
+    .container > div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+        gap: 2rem !important;
+    }
+    
+    .hero-content h1 {
+        font-size: 2rem !important;
+    }
+    
+    .hero-content p {
+        font-size: 1.1rem !important;
+    }
+    
+    .hero-content > div[style*="flex"] {
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+    
+    section[style*="background: var(--text-dark)"] > div > div {
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+    
+    .news-card[style*="padding: 3rem"] {
+        padding: 2rem !important;
+    }
+    
+    div[style*="display: flex; flex-wrap: wrap; gap: 1rem;"] {
+        flex-direction: column !important;
+    }
+    
+    .btn-sidebar-action {
+        padding: 0.8rem;
+    }
+    
+    .action-content strong {
+        font-size: 0.9rem;
+    }
+    
+    .action-content span {
+        font-size: 0.8rem;
+    }
+
+    /* Comentarios responsive */
+    .comment-form-container {
+        padding: 1.5rem !important;
+    }
+    
+    .comment-item {
+        padding: 1.5rem !important;
+    }
+    
+    .comment-content {
+        padding-left: 0 !important;
+        margin-top: 1rem;
+    }
+    
+    .comment-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 1rem !important;
+    }
+    
+    .comment-actions {
+        align-self: flex-end;
+    }
+
+    .comments-header h2 {
+        font-size: 1.5rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .news-card[style*="padding: 3rem"] {
+        padding: 1.5rem !important;
+    }
+    
+    .highlight-card {
+        padding: 1.5rem !important;
+    }
+    
+    .comment-form-container, 
+    .comment-item {
+        padding: 1rem !important;
+    }
+    
+    .user-avatar {
+        width: 35px !important;
+        height: 35px !important;
+        font-size: 1rem !important;
+    }
+    
+    .btn-comment-submit {
+        padding: 0.6rem 1.5rem !important;
+        font-size: 0.9rem !important;
+    }
+    
+    .comments-header h2 {
+        font-size: 1.3rem !important;
+    }
+    
+    .comments-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.5rem !important;
+    }
+}
+
+/* Mejoras de accesibilidad */
+.btn-comment-submit:focus,
+.btn-delete-comment:focus,
+.comment-form textarea:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Estados de carga para comentarios */
+.comment-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.comment-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Estilos para notificaciones */
+.comment-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--primary-color);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 1000;
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.hero-article {
+    height: 60vh;
+    background: linear-gradient(135deg, rgba(44, 95, 124, 0.8), rgba(74, 158, 187, 0.6)), var(--bg-image) center/cover;
+}
+</style>
+
+<!-- Script para mejorar la experiencia de comentarios -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Smooth scroll a comentarios cuando se agrega uno nuevo
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('comentario') === 'agregado') {
+        setTimeout(() => {
+            document.querySelector('.comments-section').scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }, 500);
+    }
+    
+    const hero = document.querySelector('.hero-article');
+    if (hero) {
+        const bgImage = hero.getAttribute('data-bg');
+        hero.style.setProperty('--bg-image', `url('${bgImage}')`);
+    }
+
+    // Auto-resize del textarea
+    const textarea = document.querySelector('.comment-form textarea');
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    }
+    
+    // Confirmación mejorada para eliminar comentarios
+    const deleteButtons = document.querySelectorAll('.btn-delete-comment');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const confirmDialog = confirm(
+                '¿Estás seguro de que quieres eliminar este comentario?\n\n' +
+                'Esta acción no se puede deshacer.'
+            );
+            
+            if (confirmDialog) {
+                window.location.href = this.href;
+            }
+        });
+    });
+    
+    // Validación del formulario de comentarios
+    const commentForm = document.querySelector('.comment-form');
+    if (commentForm) {
+        commentForm.addEventListener('submit', function(e) {
+            const textarea = this.querySelector('textarea');
+            const comment = textarea.value.trim();
+            
+            if (comment.length < 5) {
+                e.preventDefault();
+                alert('El comentario debe tener al menos 5 caracteres.');
+                textarea.focus();
+                return false;
+            }
+            
+            if (comment.length > 1000) {
+                e.preventDefault();
+                alert('El comentario no puede tener más de 1000 caracteres.');
+                textarea.focus();
+                return false;
+            }
+            
+            // Deshabilitar el botón de envío para evitar envíos duplicados
+            const submitButton = this.querySelector('.btn-comment-submit');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publicando...';
+        });
+    }
+});
+</script>
+{% endblock contenido_cuerpo %}

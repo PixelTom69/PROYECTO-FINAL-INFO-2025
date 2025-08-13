@@ -1,0 +1,252 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turismo Chaco - Descubre la Magia del Norte Argentino</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=123">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <a href="{% url 'path_home' %}" style="text-decoration: none; color: inherit;">
+                        <h2><i class="fas fa-seedling"></i> Turismo Chaco</h2>
+                    </a>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="{% url 'path_home' %}" class="nav-link">Inicio</a></li>
+                    <li><a href="{% url 'articulos:path_listar_articulos' %}" class="nav-link">Noticias</a></li>
+                    <li><a href="{% url 'genericos:path_listar_categorias' %}" class="nav-link">Categorias</a></li>
+                    <li><a href="{% url 'genericos:acerca_de' %}" class="nav-link">Acerca de</a></li>
+                    <li><a href="{% url 'contacto:contacto' %}" class="nav-link">Contacto</a></li>
+                </ul>
+                <div class="auth-buttons">
+                    {% if user.is_authenticated %}
+                        <!-- Usuario logueado -->
+                        <div class="user-welcome">
+                            <span class="welcome-text">
+                                <i class="fas fa-user"></i>
+                                Hola, bienvenido {{ user.username }}
+                            </span>
+                            <div class="user-dropdown">
+                                <button class="user-menu-btn">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="dropdown-content">
+                                    <a href="#" class="dropdown-item">
+                                        <i class="fas fa-user-cog"></i>
+                                        Mi Perfil
+                                    </a>
+                                    <a href="#" class="dropdown-item">
+                                        <i class="fas fa-heart"></i>
+                                        Favoritos
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <form method="post" action="{% url 'usuarios:path_logout' %}" style="display: inline; width: 100%;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item logout" style="background: none; border: none; cursor: pointer; width: 100%; text-align: left; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.75rem; color: #dc3545;">
+                                            <i class="fas fa-sign-out-alt"></i>
+                                            Cerrar Sesión
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- Usuario no logueado -->
+                        <a href="{% url 'usuarios:path_login' %}" class="btn-login">Iniciar Sesión</a>
+                        <a href="{% url 'usuarios:path_registro' %}" class="btn-register">Registrarse</a>
+                    {% endif %}
+                </div>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class = "cuerpo">
+        {% block contenido_cuerpo %}
+        {% endblock contenido_cuerpo %}
+    </div>
+
+<!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3><i class="fas fa-seedling"></i> Turismo Chaco</h3>
+                    <p>Descubre la magia del norte argentino con nosotros. Turismo natural, cultural y de eventos.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="{% url 'path_home' %}">Inicio</a></li>
+                        <li><a href="{% url 'articulos:path_listar_articulos' %}">Noticias</a></li>
+                        <li><a href="{% url 'genericos:acerca_de' %}">Acerca de</a></li>
+                        <li><a href="{% url 'contacto:contacto' %}">Contacto</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Destinos</h4>
+                    <ul>
+                        <li><a href="{% url 'articulos:path_detalle_articulo' 1 %}">Campo del Cielo</a></li>
+                        <li><a href="{% url 'articulos:path_detalle_articulo' 2 %}">Aguas Termales</a></li>
+                        <li><a href="{% url 'articulos:path_detalle_articulo' 3 %}">Pesca Deportiva</a></li>
+                        <li><a href="{% url 'articulos:path_detalle_articulo' 4 %}">Arte Público</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Síguenos</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Turismo Chaco. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- CSS para el menú de usuario -->
+    <style>
+    .user-welcome {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        position: relative;
+    }
+
+    .welcome-text {
+        color: #333;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .welcome-text i {
+        color: #28a745;
+    }
+
+    .user-dropdown {
+        position: relative;
+    }
+
+    .user-menu-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+
+    .user-menu-btn:hover {
+        background-color: #f8f9fa;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        background: white;
+        min-width: 200px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        z-index: 1000;
+        overflow: hidden;
+        margin-top: 0.5rem;
+        border: 1px solid #e1e5e9;
+    }
+
+    .user-dropdown:hover .dropdown-content {
+        display: block;
+    }
+
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        text-decoration: none;
+        color: #333;
+        transition: background-color 0.3s ease;
+        font-size: 0.9rem;
+    }
+
+    .dropdown-item:hover {
+        background-color: #f8f9fa;
+        color: #333;
+    }
+
+    .dropdown-item.logout {
+        color: #dc3545;
+        font-family: inherit;
+    }
+
+    .dropdown-item.logout:hover {
+        background-color: #f8f9fa;
+        color: #dc3545;
+    }
+
+    .dropdown-divider {
+        height: 1px;
+        background-color: #e1e5e9;
+        margin: 0.5rem 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .user-welcome {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .welcome-text {
+            font-size: 0.9rem;
+        }
+        
+        .dropdown-content {
+            right: -20px;
+            min-width: 180px;
+        }
+    }
+    </style>
+
+    <!-- JavaScript para mejorar la interacción -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mejorar la funcionalidad del dropdown en dispositivos móviles
+        const userMenuBtn = document.querySelector('.user-menu-btn');
+        const dropdownContent = document.querySelector('.dropdown-content');
+        
+        if (userMenuBtn && dropdownContent) {
+            userMenuBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
+            });
+            
+            // Cerrar dropdown al hacer clic fuera
+            document.addEventListener('click', function() {
+                dropdownContent.style.display = 'none';
+            });
+        }
+    });
+    </script>
+    
+</body>
+</html>

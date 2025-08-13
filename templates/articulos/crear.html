@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block contenido_cuerpo %}
+<!-- Crear Artículo Section -->
+<section class="create-article-section">
+    <div class="container">
+        <!-- Header del formulario -->
+        <div class="form-header">
+            <h1 class="section-title">Crear Nuevo Artículo</h1>
+            <p class="form-subtitle">Comparte las últimas noticias y novedades sobre turismo en Chaco</p>
+        </div>
+
+        <!-- Formulario -->
+        <div class="form-container">
+            <div class="form-wrapper">
+                <form method="POST" enctype="multipart/form-data" class="article-form">
+                    {% csrf_token %}
+                    
+                    <!-- Renderizar campos del formulario -->
+                    <div class="form-fields">
+                        {{ form.as_p }}
+                    </div>
+                    
+                    <!-- Botones de acción -->
+                    <div class="form-actions">
+                        <!-- Usar el namespace y name correcto -->
+                        <a href="{% url 'articulos:path_listar_articulos' %}" class="btn-cancel">
+                            <i class="fas fa-times"></i>
+                            Cancelar
+                        </a>
+                        
+                        <button type="submit" class="btn-submit">
+                            <i class="fas fa-save"></i>
+                            Crear Artículo
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Panel lateral con tips -->
+            <div class="tips-panel">
+                <h3><i class="fas fa-lightbulb"></i> Tips para un buen artículo</h3>
+                <ul class="tips-list">
+                    <li>
+                        <i class="fas fa-check"></i>
+                        Usa un título llamativo y descriptivo
+                    </li>
+                    <li>
+                        <i class="fas fa-check"></i>
+                        Incluye una imagen de alta calidad
+                    </li>
+                    <li>
+                        <i class="fas fa-check"></i>
+                        Escribe un resumen atractivo
+                    </li>
+                    <li>
+                        <i class="fas fa-check"></i>
+                        Usa párrafos cortos y claros
+                    </li>
+                    <li>
+                        <i class="fas fa-check"></i>
+                        Agrega tags relevantes
+                    </li>
+                </ul>
+                
+                <div class="help-box">
+                    <i class="fas fa-info-circle"></i>
+                    <p><strong>¿Necesitas ayuda?</strong><br>
+                    Contacta al administrador si tienes dudas sobre la creación de artículos.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock contenido_cuerpo %}
